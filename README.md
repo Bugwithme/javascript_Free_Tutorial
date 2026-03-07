@@ -567,7 +567,7 @@ async function fetchFakeWebsite() {
     console.log(res1);
 }
 ```
-在这段代码中，我们把 fetchFakeWebsite 函数定义为 async 函数，函数内部通过 await 关键字等待 fetch 方法请求一个不存在的网络地址http://nope.nope。由于该地址无效且无法访问，这个网络请求必然会失败，使得 fetch 方法返回一个状态为“被拒绝（rejected）”的 Promise 对象。而原代码未做任何异常处理，因此执行该函数时会直接抛出网络请求失败的错误。我们该如何捕获 async 函数抛出的错误示例代码如下。
+在这段代码中，我们把 fetchFakeWebsite 函数定义为 async 函数，函数内部通过 await 关键字等待 fetch 方法请求一个不存在的网络地址`http://nope.nope`。由于该地址无效且无法访问，这个网络请求必然会失败，使得 fetch 方法返回一个状态为“被拒绝（rejected）”的 Promise 对象。而原代码未做任何异常处理，因此执行该函数时会直接抛出网络请求失败的错误。我们该如何捕获 async 函数抛出的错误示例代码如下。
 ```javascript
 async function fetchFakeWebsite() {
     try{
@@ -582,7 +582,7 @@ async function fetchFakeWebsite() {
 当我们运行 fetchFakeWebsite 函数时，被拒绝的 Promise 错误就会被try/catch成功捕获，控制台会输出预设的提示信息和具体错误（如 TypeError: Failed to fetch），程序不会出现意外中断，实现了优雅的错误兜底。结果如下所示。
 
 ### 9.2 统一处理批量异步操作
-在实际开发中，async 函数往往包含一系列连续的异步操作（多个 Promise），例如8.1小节中用于获取宝可梦数据的 getFourPokemon 函数，这类函数中任意一步操作都可能因网络中断、请求地址无效等原因抛出异常。针对这种场景，无需为每个 Promise 单独编写一个 try/catch 语句块，而是可以采用 “统一包裹” 的思路：在 async 函数顶部编写一个全局的 try 块，将所有可能出错的异步操作（以及其他易抛出错误的代码）全部包裹在内，再配合一个全局的 catch 块来统一处理所有异常。例如8.1小节中的getFourPokemon 函数中第三个请求的地址改为不存在的http://nope.nope，。代码如下所示。
+在实际开发中，async 函数往往包含一系列连续的异步操作（多个 Promise），例如8.1小节中用于获取宝可梦数据的 getFourPokemon 函数，这类函数中任意一步操作都可能因网络中断、请求地址无效等原因抛出异常。针对这种场景，无需为每个 Promise 单独编写一个 try/catch 语句块，而是可以采用 “统一包裹” 的思路：在 async 函数顶部编写一个全局的 try 块，将所有可能出错的异步操作（以及其他易抛出错误的代码）全部包裹在内，再配合一个全局的 catch 块来统一处理所有异常。例如8.1小节中的getFourPokemon 函数中第三个请求的地址改为不存在的`http://nope.nope`，。代码如下所示。
 ```javascript
 async function fetchFakeWebsite() {
     try {
@@ -801,7 +801,7 @@ Promise.all(lotsOfFetchCalls).then((results) => {
 ```
 这段代码用于批量获取 6 个宝可梦的信息。我们首先创建一个名为lotsOfFetchCalls的数组，数组中依次放入 6 个 fetch 请求——每个请求对应一个宝可梦的接口地址（即${BASE_URL}/1到${BASE_URL}/6），每个fetch调用都会返回一个独立的 Promise 实例。需要注意的是，在调用 fetch 方法的瞬间，这 6 个网络请求就已经并行发起。我们将lotsOfFetchCalls 数组作为参数传递给而Promise.all方法得到一个新的 Promise。然后调用 then 处理所有 Promise 成功的场景：比如打印 “Promise.all is done and resolved”，并打印输出汇总后的 results 数组（包含 6 个宝可梦的响应数据），输出结果如下。
  
-同时，使用 catch捕获任意一个 Promise 失败的场景，打印 “one of the promises was rejected”，并输出具体的错误信息。如果将任意一个请求改为不存在的URL http://nope.nope，输出结果如下。
+同时，使用 catch捕获任意一个 Promise 失败的场景，打印 “one of the promises was rejected”，并输出具体的错误信息。如果将任意一个请求改为不存在的URL `http://nope.nope`，输出结果如下。
  
 我们可以看到，任意一个 Promise 失败，Promise.all会立即终止并触发.catch，即使其他 Promise 可以成功完成，也不会再返回任何成功结果 —— 这正是 “all” 的含义：只有全部成功，才算成功。
 
@@ -956,9 +956,9 @@ Promise.race(lotsOfFetchCalls)
 ```
 需要注意的是，这段代码的执行结果不具备确定性。由于每个 fetch 请求的网络传输耗时存在差异，每次执行时率先完成的 Promise 成员都可能不同 —— 可能是 pokemon/1，也可能是 pokemon/2 或 pokemon/3。Promise.race 会严格遵循 “先到先得” 的原则，将首个状态敲定的 Promise 结果作为自身的返回结果，其余未完成的请求则会被忽略。代码运行结果如下。
  
-14.2 失败场景演示：首个异常决定整体流程
+### 14.2 失败场景演示：首个异常决定整体流程
 Promise.race 的竞赛逻辑对失败状态同样适用：当传给 Promise.race 的所有 Promise 组成的集合（通常是数组）里，有某个 Promise 最先完成状态确定，且这个状态是 rejected（失败）时，Promise.race 返回的新 Promise 会立刻触发拒绝逻辑，整个异步流程会直接进入 catch 异常处理环节。
-我们在 14.1 示例中 的请求数组中加入一个指向无效地址的 fetch 请求（如 http://nope.nope），即可验证该特性：
+我们在 14.1 示例中 的请求数组中加入一个指向无效地址的 fetch 请求（如`http://nope.nope`），即可验证该特性：
 ```javascript
 const BASE_URL = "https://pokeapi.co/api/v2/pokemon";
 
